@@ -1,0 +1,103 @@
+﻿@page "/adminpage"
+<h3>AdminPage</h3>
+
+@using Microsoft.AspNetCore.Components.Forms;
+@using Microsoft.JSInterop;
+@using SystemDB.WebApp.Data
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using System.Security.Claims
+@inject UserManager<IdentityUser> _userManager
+@inject SignInManager<IdentityUser> _signInManager
+@inject IJSRuntime JSRuntime
+
+<EditForm Model="newUser" OnValidSubmit="@AddUserWithRole">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class=" form-group row">
+        <label for="login" class="col-sm-2 col-form-label">
+            Добави потребител
+        </label>
+        <div class="col-sm-10">
+            <InputText id="login" @bind-Value="newUser.LoginName"></InputText>
+        </div>
+    </div>
+    <div class=" form-group row">
+        <label for="role-select" class="col-sm-2 col-form-label">
+            Дай роля
+        </label>
+        <div class="col-sm-10">
+            <InputSelect id="role-select" @bind-Value="newUser.UserRole">
+                @foreach (var role in selectList)
+                {
+                    <option value="@role.Value" selected="@role.Selected">@role.Text</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <input type="submit" class="btn btn-primary" value="Запази" />
+</EditForm>
+
+@code {
+    User newUser = new User();
+    List<Role> rolesList = new List<Role>();
+    List<SelectListItem> selectList = new List<SelectListItem>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        rolesList = new List<Role>()
+        {
+            new Role(){ RoleName = "Admin", ID = "1" },
+            new Role(){ RoleName = "HR", ID = "2" },
+            new Role(){ RoleName = "Manager", ID = "3" },
+            new Role(){ RoleName = "User", ID = "4" }
+        };
+
+        foreach (Role role in rolesList)
+        {
+            selectList.Add(new SelectListItem()
+                {
+                    Text = role.RoleName,
+                    Value = role.ID,
+                    Selected = role == rolesList.First()
+                });
+        }
+    }
+
+    public async void AddUserWithRole(EditContext context)
+    {
+        var usermodel = context.Model as User;
+
+        var user = new IdentityUser
+            {
+                UserName = usermodel.LoginName,
+                Email = usermodel.LoginName,
+                EmailConfirmed = true
+            };
+        var messagePrompt = "Неуспешно";
+
+        var result = await _userManager.CreateAsync(user, "Password@123");
+        if (result.Succeeded)
+        {
+            messagePrompt = "Успешно добавен потребител ";
+
+            var getRoleFromList = rolesList.FirstOrDefault(x => x.ID == usermodel?.UserRole);
+
+            var roleAddedResult = await _userManager.AddToRoleAsync(user, getRoleFromList?.RoleName ?? "User");
+
+            if (roleAddedResult.Succeeded)
+            {
+                messagePrompt += "Успешно добавена роля ";
+            }
+
+            var claimAddedResult = await _userManager.AddClaimAsync(user, new Claim(getRoleFromList?.RoleName ?? "User", getRoleFromList?.ID ?? ""));
+
+            if (claimAddedResult.Succeeded)
+            {
+                messagePrompt += "Успешно добавен claim ";
+            }
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", messagePrompt);
+    }
+}

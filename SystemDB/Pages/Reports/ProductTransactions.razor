@@ -1,0 +1,108 @@
+﻿@page "/productreport"
+
+@inject ISearchProductTransactionsUseCase SearchProductTransactionsUseCase
+@inject IJSRuntime JSRuntime
+
+<h3>Отчет на Продуктите</h3>
+<br />
+
+<div id="printarea">
+    <div class="row">
+        <div class="col">
+            <label for="inv">Име на продукта</label>
+            <input type="text" id="inv" class="form-control" @bind-value="prodName" />
+        </div>
+        <div class="col">
+            <label for="df">От дата</label>
+            <input type="date" id="df" class="form-control" @bind-value="dateFrom" />
+        </div>
+        <div class="col">
+            <label for="dt">До дата</label>
+            <input type="date" id="dt" class="form-control" @bind-value="dateTo" />
+        </div>
+        <div class="col">
+            <label for="at">Тип на дейността</label>
+            <select id="at" class="form-control" @bind="activityTypeId">
+                <option value="0"></option>
+                <option value="1">Произвеждане на продукт</option>
+                <option value="2">Продажба на продукт</option>
+            </select>
+        </div>
+        <div class="col">
+            <label>&nbsp;</label>
+            <button type="button" class="btn btn-primary form-control" @onclick="SearchProducts">Търсене</button>
+        </div>
+        <div class="col">
+            <label>&nbsp;</label>
+            <button type="button" class="btn btn-primary form-control" @onclick="PrintReport">Принтиране</button>
+        </div>
+    </div>
+    <br />
+    @if (productTransactions != null)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Продукт</th>
+                    <th>Дейност</th>
+                    <th>Количество преди</th>
+                    <th>Количество след</th>
+                    <th>Номер на производство</th>
+                    <th>Номер на продажба</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pt in productTransactions)
+                {
+                    <tr>
+                        <td>@pt.TransactionDate.ToString("MM/dd/yyyy")</td>
+                        <td>@pt.Product.ProductName</td>
+                        <td>
+                            @if (pt.ActivityType == ProductTransactionType.ProduceProduct)
+                            {
+                                <text>Произвеждане</text>
+                            }
+                            else if (pt.ActivityType == ProductTransactionType.SellProduct)
+                            {
+                                <text>Продажба</text>
+                            }
+                        </td>
+                        <td>@pt.QuantityBefore</td>
+                        <td>@pt.QuantityAfter</td>
+                        <td>@pt.ProductionNumber</td>
+                        <td>@pt.SalesOrderNumber</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    private string prodName;
+    private DateTime? dateFrom;
+    private DateTime? dateTo;
+    private int activityTypeId = 0;
+    private IEnumerable<ProductTransaction> productTransactions;
+
+    private async Task SearchProducts()
+    {
+        ProductTransactionType? productTransactionType = null;
+        if (activityTypeId != 0)
+        {
+            productTransactionType = (ProductTransactionType)activityTypeId;
+        }
+
+        productTransactions = await SearchProductTransactionsUseCase.ExecuteAsync(
+            prodName,
+            dateFrom,
+            dateTo,
+            productTransactionType);
+    }
+
+    private void PrintReport()
+    {
+        JSRuntime.InvokeVoidAsync("print");
+    }
+}

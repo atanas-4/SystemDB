@@ -1,0 +1,30 @@
+﻿<AuthorizeView>
+    <Authorized>
+        <ul class="navbar-nav mb-2 mb-lg-0 float-end">
+            <li class="nav-item">
+                <NavLink class="nav-link" href="Identity/Account/Manage">
+                    Здравейте, @context.User.Identity?.Name!
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <form class="d-flex" method="post" action="Identity/Account/LogOut">
+                    <button type="submit" class="nav-link btn btn-link">Изход</button>
+                </form>
+            </li>
+        </ul>
+    </Authorized>
+    <NotAuthorized>
+        <ul class="navbar-nav mb-2 mb-lg-0 float-end">
+            <li class="nav-item">
+                <NavLink class="nav-link" href="Identity/Account/Register">
+                    Регистрация
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="Identity/Account/Login">
+                    Вход
+                </NavLink>
+            </li>
+        </ul>
+    </NotAuthorized>
+</AuthorizeView>
