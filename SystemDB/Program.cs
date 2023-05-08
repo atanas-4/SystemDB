@@ -29,7 +29,7 @@ builder.Services.AddSingleton<WeatherForecastService>();
 
 builder.Services.AddDbContext<SystemDBContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SystemDBConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 //DI repositories
 builder.Services.AddTransient<IInventoryRepository, InventoryRepository>();
