@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SystemDB.Plugins.EFCore;
 
@@ -11,9 +12,10 @@ using SystemDB.Plugins.EFCore;
 namespace SystemDB.Plugins.EFCore.Migrations
 {
     [DbContext(typeof(SystemDBContext))]
-    partial class SystemDBContextModelSnapshot : ModelSnapshot
+    [Migration("20230508125650_unit3")]
+    partial class unit3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
